@@ -16,4 +16,20 @@ struct Movie: Decodable {
     let pubDate: String
     
     var imageURL: URL? { URL(string: image) }
+    
+    init(
+        title: String,
+        imageURL: String,
+        userRating: String,
+        actor: String,
+        director: String,
+        pubDate: String
+    ) {
+        self.title = title
+        self.image = imageURL
+        self.userRating = userRating
+        self.actor = actor
+        self.director = director
+        self.pubDate = pubDate
+    }
 }
