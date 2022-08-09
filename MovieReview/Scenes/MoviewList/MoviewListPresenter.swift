@@ -12,33 +12,40 @@ protocol MoviewListProtocol: AnyObject {
     func setupSearchBar()
     func setupViews()
     func updateSearchTableView(isHidden: Bool)
+    func pushToMovieViewController(with movie: Movie)
+    func updateCollectionView()
 }
 
 final class MoviewListPresenter: NSObject {
     private weak var viewController: MoviewListProtocol? // 메모리 릭
     
+    private let userDefaultsManager: UserDefaultsManagerProtocol
+    
     private let moviewSearchManager: MoviewSearchManagerProtocol
     
-    private var likedMovie: [Movie] = [
-        Movie(title: "Starwars", imageURL: "", userRating: "5.0", actor: "ABC", director: "ABC", pubDate: "2021"),
-        Movie(title: "Starwars", imageURL: "", userRating: "5.0", actor: "ABC", director: "ABC", pubDate: "2021"),
-        Movie(title: "Starwars", imageURL: "", userRating: "5.0", actor: "ABC", director: "ABC", pubDate: "2021")
-    ]
+    private var likedMovie: [Movie] = []
     
     private var currentMoviewSearchResult: [Movie] = []
     
     init(
         viewController: MoviewListProtocol,
+        userDefaultsManager: UserDefaultsManagerProtocol = UserDefaultsManager(),
         moviewSearchManager: MoviewSearchManagerProtocol = MoviewSearchManager()
     ) {
         self.viewController = viewController
         self.moviewSearchManager = moviewSearchManager
+        self.userDefaultsManager = userDefaultsManager
     }
     
     func viewDidLoad() {
         viewController?.setupNavigationBar()
         viewController?.setupSearchBar()
         viewController?.setupViews()
+    }
+    
+    func viewWillAppear() {
+        likedMovie = userDefaultsManager.getMovies()
+        viewController?.updateCollectionView()
     }
 }
 
@@ -81,6 +88,11 @@ extension MoviewListPresenter: UICollectionViewDelegateFlowLayout {
         let inset: CGFloat = 16.0
         return UIEdgeInsets(top: inset, left: inset, bottom: inset, right: inset)
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let movie = likedMovie[indexPath.item]
+        viewController?.pushToMovieViewController(with: movie)
+    }
 }
 
 extension MoviewListPresenter: UICollectionViewDataSource {
@@ -105,7 +117,10 @@ extension MoviewListPresenter: UICollectionViewDataSource {
 }
 
 extension MoviewListPresenter: UITableViewDelegate {
-    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let movie = currentMoviewSearchResult[indexPath.row]
+        viewController?.pushToMovieViewController(with: movie)
+    }
 }
 
 extension MoviewListPresenter: UITableViewDataSource {
